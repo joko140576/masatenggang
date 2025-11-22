@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Karyawan</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    body { background:lightskyblue; }
+    .card-hero { border-radius:18px; box-shadow:0 10px 30px rgba(19,35,57,0.06); }
+    .loader { width:18px;height:18px;border:3px solid rgba(0,0,0,0.1);border-top-color:#555;border-radius:50%;animation:spin .8s linear infinite;display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+<div class="container py-4">
+  <h3>Dashboard Pegawai Masa Jeda</h3>
+
+  <div class="row g-3 mt-2">
+
+    <!-- LEFT PANEL -->
+    <div class="col-12 col-lg-4">
+      <div class="card card-hero p-3">
+        <select id="filter-type" class="form-select form-select-sm mb-2">
+          <option value="divisi">Group by: Divisi</option>
+          <option value="region">Group by: Region</option>
+          <option value="jabatan">Group by: Jabatan</option>
+        </select>
+
+        <button id="btn-refresh" class="btn btn-primary btn-sm">Refresh</button>
+        <span id="busy" class="loader ms-2"></span>
+
+        <ul id="top-list" class="list-group list-group-flush mt-3"></ul>
+      </div>
+    </div>
+
+    <!-- CHART PANEL -->
+    <div class="col-12 col-lg-8">
+      <div class="card card-hero p-3">
+        <canvas id="barChart" height="130"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FILTERS -->
+  <div class="card p-3 mt-4">
+    <h6>Filter Lanjutan</h6>
+    <div class="row g-2">
+      <div class="col-auto">
+        <label class="form-label mb-0">Region</label>
+        <select id="filter-region" class="form-select form-select-sm">
+          <option value="">Semua</option>
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label class="form-label mb-0">Jabatan</label>
+        <select id="filter-jabatan" class="form-select form-select-sm">
+          <option value="">Semua</option>
+        </select>
+      </div>
+
+      <div class="col-auto">
+        <label class="form-label mb-0">Cari Nama</label>
+        <input id="filter-nama" class="form-control form-control-sm" placeholder="ketik nama...">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GS_ENDPOINT = "https://script.google.com/macros/s/AKfycbwxAVcW-j_evYR0M4gLP0XnCbdX-iJdidlpmfTfs7vrLVytHhZwLdtVIu2bKIrQ3SdIsg/exec"; // <<< GANTI INI !!!
+
+let chart;
+let rawRows = [];
+
+const busy = document.getElementById("busy");
+function showBusy(on) { busy.style.display = on ? "inline-block" : "none"; }
+
+async function fetchRows() {
+  showBusy(true);
+  try {
+    const res = await fetch(GS_ENDPOINT);
+    const data = await res.json();
+
+    rawRows = data.rows || [];
+    return rawRows;
+
+  } catch (e) {
+    alert("Gagal mengambil data. Periksa URL Web App.");
+    return [];
+  } finally {
+    showBusy(false);
+  }
+}
+
+function aggregate(rows, key) {
+  const map = {};
+  rows.forEach(r => map[r[key]] = (map[r[key]] || 0) + 1);
+
+  return Object.keys(map).map(k => ({
+    label: k,
+    value: map[k]
+  })).sort((a, b) => b.value - a.value);
+}
+
+function renderChart(labels, values) {
+  const ctx = document.getElementById("barChart");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        label: "Jumlah",
+        backgroundColor: "rgba(54,162,235,0.7)",
+        borderRadius: 8,
+        barThickness: 30
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+
+function updateFilters(rows) {
+  const regions = [...new Set(rows.map(r => r.region).filter(Boolean))].sort();
+  const jabatan = [...new Set(rows.map(r => r.jabatan).filter(Boolean))].sort();
+
+  document.getElementById("filter-region").innerHTML =
+    "<option value=''>Semua</option>" +
+    regions.map(r => `<option>${r}</option>`).join("");
+
+  document.getElementById("filter-jabatan").innerHTML =
+    "<option value=''>Semua</option>" +
+    jabatan.map(j => `<option>${j}</option>`).join("");
+}
+
+function applyFilters() {
+  let rows = rawRows;
+
+  let reg = document.getElementById("filter-region").value;
+  let jab = document.getElementById("filter-jabatan").value;
+  let nama = document.getElementById("filter-nama").value.toLowerCase();
+  let group = document.getElementById("filter-type").value;
+
+  if (reg) rows = rows.filter(r => r.region === reg);
+  if (jab) rows = rows.filter(r => r.jabatan === jab);
+  if (nama) rows = rows.filter(r => r.nama.toLowerCase().includes(nama));
+
+  const agg = aggregate(rows, group);
+
+  document.getElementById("top-list").innerHTML =
+    agg.slice(0, 6).map(item =>
+      `<li class="list-group-item d-flex justify-content-between">
+        ${item.label}
+        <span class="badge bg-secondary">${item.value}</span>
+      </li>`
+    ).join("");
+
+  renderChart(
+    agg.map(a => a.label),
+    agg.map(a => a.value)
+  );
+}
+
+async function init() {
+  const rows = await fetchRows();
+  updateFilters(rows);
+  applyFilters();
+}
+
+document.getElementById("btn-refresh").addEventListener("click", init);
+document.getElementById("filter-type").addEventListener("change", applyFilters);
+document.getElementById("filter-region").addEventListener("change", applyFilters);
+document.getElementById("filter-jabatan").addEventListener("change", applyFilters);
+document.getElementById("filter-nama").addEventListener("input", applyFilters);
+
+init();
+</script>
+
+</body>
+</html>
