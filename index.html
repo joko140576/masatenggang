@@ -25,13 +25,11 @@
         color: #1f2c46;
     }
 
-    /* ANIMASI SLIDE-UP */
     @keyframes slideUp {
         0% { opacity: 0; transform: translateY(40px); }
         100% { opacity: 1; transform: translateY(0); }
     }
 
-    /* CARD STYLING */
     .flow-card {
         border-radius: 20px;
         padding: 30px;
@@ -45,14 +43,11 @@
         transition: 0.35s ease;
     }
 
-    /* Moving shadow */
     .flow-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 20px 35px rgba(0,0,0,0.25);
     }
 
-    
-    /* Number circle — kini di sebelah kiri */
     .num {
         position: absolute;
         top: 12px;
@@ -70,8 +65,6 @@
         box-shadow: 0 5px 12px rgba(0,0,0,0.3);
     }
 
-
-    /* Gradients */
     .grad-1 { background: linear-gradient(135deg,#0083b0,#00b4db); }
     .grad-2 { background: linear-gradient(135deg,#4facfe,#00f2fe); }
     .grad-3 { background: linear-gradient(135deg,#f5588c,#fcd34d); }
@@ -82,25 +75,17 @@
         margin-bottom: 12px;
     }
 
-    
-
     .modal-body {
         font-size: 18px;
         line-height: 1.7;
         font-weight: 500;
     }
 
-
-
-
-
-    /* Ukuran modal agar tidak terlalu panjang */
     .modal-dialog {
-        max-width: 650px !important;   /* <— ini bikin modal jadi pas, tidak kepanjangan */
+        max-width: 650px !important;
         margin-top: 60px;
     }
 
-    /* Height lebih proporsional + glass effect */
     .modal-content {
         border-radius: 18px;
         padding: 10px 25px;
@@ -109,10 +94,8 @@
         box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
         color: black;
         border: 2px solid #10b981;
-      
     }
 
-    /* Neon Button */
     .neon-btn {
         border: none;
         padding: 14px 28px;
@@ -148,7 +131,7 @@
     }
 
     .btn-close {
-        filter: brightness(0) invert(1);   /* warna X jadi putih */
+        filter: brightness(0) invert(1);
         opacity: .85;
     }
 
@@ -156,26 +139,15 @@
         opacity: 1;
     }
 
-
-    /* Animasi muncul dari bawah */
 @keyframes modalSlideUp {
-    0% {
-        transform: translateY(40px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
 }
 
-/* Terapkan animasi ke modal */
 .modal.fade .modal-dialog {
-    transition: none; /* matikan default bootstrap */
+    transition: none;
     animation: modalSlideUp 0.45s ease-out;
 }
-
-
 </style>
 </head>
 
@@ -186,7 +158,6 @@
 <div class="container mt-4">
     <div class="row g-4">
 
-        <!-- CARD 1 -->
         <div class="col-md-6">
             <div class="flow-card grad-1" onclick="showModal(1)">
                 <div class="num">1</div>
@@ -195,7 +166,6 @@
             </div>
         </div>
 
-        <!-- CARD 2 -->
         <div class="col-md-6">
             <div class="flow-card grad-2" onclick="showModal(2)">
                 <div class="num">2</div>
@@ -204,7 +174,6 @@
             </div>
         </div>
 
-        <!-- CARD 3 -->
         <div class="col-md-6">
             <div class="flow-card grad-3" onclick="showModal(3)">
                 <div class="num">3</div>
@@ -213,7 +182,6 @@
             </div>
         </div>
 
-        <!-- CARD 4 -->
         <div class="col-md-6">
             <div class="flow-card grad-4" onclick="showModal(4)">
                 <div class="num">4</div>
@@ -280,8 +248,6 @@ function showModal(id) {
         2. Pegawai akan dipanggil dan diberikan SPPK & PKWT rangkap 2 bermaterai.<br>
         3. Posisi, pangkat, jabatan, dan gaji tetap sama. Kontrak baru dimulai dari nol.<br><br>
         <a href="https://wawancara-masajeda.vercel.app/" target="_blank"><button class="neon-btn">Test Seleksi Otomatis</button></a>
-
-
         `;
     }
 
@@ -291,6 +257,15 @@ function showModal(id) {
     new bootstrap.Modal(document.getElementById('infoModal')).show();
 }
 </script>
+
+<!-- BUTTON TAMBAHAN -->
+<div class="text-center mt-5">
+    <a href="grafik/index.html" target="_blank" 
+       class="btn btn-lg btn-primary px-4 py-2 shadow-lg"
+       style="border-radius: 50px; font-weight: 600;">
+        <i class="bi bi-speedometer2 me-2"></i> Lihat Dashboard
+    </a>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
