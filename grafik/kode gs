@@ -1,0 +1,60 @@
+function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+
+  if (data.length <= 1) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'empty',
+      rows: []
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Header
+  var header = data[0].map(function(h) {
+    return String(h).toLowerCase().trim();
+  });
+
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    var r = data[i];
+    rows.push({
+      nama: r[header.indexOf('nama')] || "",
+      divisi: r[header.indexOf('divisi')] || "",
+      region: r[header.indexOf('region')] || "",
+      jabatan: r[header.indexOf('jabatan')] || ""
+    });
+  }
+
+  var params = e.parameter || {};
+
+  // GROUPING (divisi / region / jabatan)
+  if (params.groupBy) {
+    var key = params.groupBy.toLowerCase();
+    var agg = {};
+
+    rows.forEach(function(row) {
+      var value = (row[key] || "Undefined").toString();
+      if (!agg[value]) agg[value] = 0;
+      agg[value]++;
+    });
+
+    var arr = Object.keys(agg).map(k => ({
+      label: k,
+      value: agg[k]
+    }));
+
+    arr.sort((a, b) => b.value - a.value);
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "ok",
+      grouped: arr
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "ok",
+    rows: rows
+  })).setMimeType(ContentService.MimeType.JSON);
+}
